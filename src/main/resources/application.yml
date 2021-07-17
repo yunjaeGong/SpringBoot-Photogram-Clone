@@ -1,0 +1,45 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+    encoding:
+      charset: utf-8
+      enabled: true
+
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:tcp://localhost:9092/./testdb
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false
+    properties:
+      hibernate.format_sql: true
+
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 3MB
+
+  security:
+    user:
+      name: test
+      password: 1234
+
+file:
+  path: "/Users/yunjaegong/Desktop/Instagram Clone/upload/"
