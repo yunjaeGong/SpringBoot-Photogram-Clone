@@ -57,8 +57,9 @@ public class UserApiController {
 
     @GetMapping("/api/user/{pageUserId}/subscribe") // profile page 주인의 구독 정보
     public ResponseEntity<?> subscribeList(@PathVariable long pageUserId, @AuthenticationPrincipal PrincipalDetails principal) {
-        List<SubscribeDto> subscribeDto = null;
-        subscribeService.subscribeList(principal.getUser().getId(), pageUserId);
+
+        List<SubscribeDto> subscribeDto = subscribeService.subscribeList(principal.getUser().getId(), pageUserId);
+
         return new ResponseEntity<>(new CMRespDto<>(1, "구독자 정보 리스트 불러오기 성공", subscribeDto), HttpStatus.OK);
     }
 }

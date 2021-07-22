@@ -1,5 +1,6 @@
 package com.cos.photogramstart.domain.image;
 
+import com.cos.photogramstart.domain.likes.Likes;
 import com.cos.photogramstart.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @AllArgsConstructor
@@ -25,6 +27,7 @@ public class Image { // N, 1 N개의 이미지는 1명이 등록 가능, 1개의
 
     private String postImageUrl; // 사진은 서버 특정 폴더에 저장이 되는데, db에는 경로만 저장
 
+    @JsonIgnoreProperties({"images"}) // story에서 이미지 가져 올 때 user 내 images는 필요 없음.
     @JoinColumn(name = "userId")
     @ManyToOne // N-1의 관계
     private User user; // 업로드 유저, 1,1
@@ -32,7 +35,17 @@ public class Image { // N, 1 N개의 이미지는 1명이 등록 가능, 1개의
     @CreationTimestamp
     private LocalDateTime createDate;
 
-    // TODO: 이미지 좋아요 누른 유저
+    // TODO: 이미지 좋아요
+    @JsonIgnoreProperties({"image"})
+    @OneToMany(mappedBy = "image") // fk image테이블에
+    private List<Likes> likes; // likes getter 호출하면 가져옴 - Lazy loading
+
+    @Transient // DB에 Column 생성 x
+    private boolean likeState = false;
+
+    @Transient
+    private int likeCount = 0;
+
     // TODO: 댓글
 
 

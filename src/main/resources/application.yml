@@ -23,7 +23,7 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: false
@@ -43,3 +43,6 @@ spring:
 
 file:
   path: "/Users/yunjaegong/Desktop/Instagram Clone/upload/"
+
+story:
+  pageable: true

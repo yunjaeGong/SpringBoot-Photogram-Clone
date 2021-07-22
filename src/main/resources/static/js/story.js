@@ -8,31 +8,138 @@
  */
 
 // (1) 스토리 로드하기
+let page = 0;
+
 function storyLoad() {
 
+    $.ajax({
+        type: "GET",
+        url: `/api/image?page=${page}`,
+        dataType: "json"
+    }).done(res => {
+        console.log(res);
+        res.data.content.forEach((image) => {
+            let storyItem = getStoryItem(image);
+                $("#storyList").append(storyItem)
+        })
+    }).fail(error => {
+        console.log("story 이미지 로드에 실패했습니다", error);
+    })
 }
 
-function getStoryItem() {
+storyLoad();
 
+function getStoryItem(image) {
+    let item =
+        `<div class="story-list__item">
+                <div class="sl__item__header">
+                    <div>
+                        <img class="profile-image" src="/upload/${image.user.profileImageUrl}"
+                             onerror="this.src='/images/person.jpeg'"/>
+                    </div>
+                    <div>${image.user.username}</div>
+                </div>
+
+                <div class="sl__item__img">
+                    <img src="/upload/${image.postImageUrl}"/>
+                </div>
+
+                <div class="sl__item__contents">
+                    <div class="sl__item__contents__icon">
+                        
+                        <button>`;
+    console.log($(image.likeState));
+                if (image.likeState)
+                    item += `<i class="fas fa-heart active" id="storyLikeIcon-${image.id}" onclick="toggleLike(${image.id})"></i>`;
+                else
+                    item += `<i class="far fa-heart" id="storyLikeIcon-${image.id}" onclick="toggleLike(${image.id})"></i>`;
+
+                item +=
+                        `</button>
+                    </div>
+
+                    <span class="like"><b id="storyLikeCount-${image.id}">${image.likeCount}</b>likes</span>
+
+                    <div class="sl__item__contents__content">
+                        <p>${image.caption}</p>
+                    </div>
+
+                    <div id="storyCommentList-${image.id}">
+
+                        <div class="sl__item__contents__comment" id="storyCommentItem-1">
+                        <p>
+                            <b>Lovely :</b> 부럽습니다.
+                        </p>
+
+                        <button>
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="sl__item__input">
+                    <input type="text" placeholder="댓글 달기..." id="storyCommentInput-${image.id}"/>
+                    <button type="button" onClick="addComment()">게시</button>
+                </div>
+
+            </div>
+            </div>`;
+
+    return item;
 }
 
 // (2) 스토리 스크롤 페이징하기
 $(window).scroll(() => {
+    let triggerHeight = $(window).scrollTop - ($(document).height + $(window).height);
+
+    if (Math.abs(triggerHeight) < 5) {
+        page++;
+        storyLoad();
+    }
 
 });
 
 
 // (3) 좋아요, 안좋아요
-function toggleLike() {
-    let likeIcon = $("#storyLikeIcon-1");
-    if (likeIcon.hasClass("far")) {
-        likeIcon.addClass("fas");
-        likeIcon.addClass("active");
-        likeIcon.removeClass("far");
-    } else {
-        likeIcon.removeClass("fas");
-        likeIcon.removeClass("active");
-        likeIcon.addClass("far");
+function toggleLike(imageId) {
+    let likeIcon = $(`#storyLikeIcon-${imageId}`);
+    let likeCountObj = $(`#storyLikeCount-${imageId}`);
+
+    if (likeIcon.hasClass("far")) { // 좋아요 하기
+        $.ajax({
+            type: "post",
+            url: `/api/${imageId}/like`,
+            dataType: "json"
+        }).done(res => {
+            likeIcon.addClass("fas");
+            likeIcon.addClass("active");
+            likeIcon.removeClass("far");
+
+            let likeCount = Number(likeCountObj.text());
+            likeCountObj.text(likeCount + 1);
+        }).fail(error => {
+            console.log("좋아요가 실패했습니다.", error)
+        });
+
+    } else { // 좋아요 취소
+        $.ajax({
+            type: "delete",
+            url: `/api/${imageId}/unlike`,
+            dataType: "json"
+        }).done(res => {
+            likeIcon.removeClass("fas");
+            likeIcon.removeClass("active");
+            likeIcon.addClass("far");
+
+            let likeCount = Number(likeCountObj.text());
+            likeCountObj.text(likeCount - 1);
+
+        }).fail(error => {
+            console.log("좋아요 취소가 실패했습니다.", error)
+        })
+
     }
 }
 

@@ -6,6 +6,8 @@ import com.cos.photogramstart.domain.image.ImageRepository;
 import com.cos.photogramstart.web.dto.image.ImageUploadDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -42,5 +45,30 @@ public class ImageService {
         Image image = imageUploadDto.toEntity(fileName, principal.getUser());
 
         imageRepository.save(image);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Image> pageableImageStory(long principalId, Pageable pageable) {
+        Page<Image> images = imageRepository.mStoryPageable(principalId, pageable);
+
+        // image에 좋아요 상태 담기
+        images.forEach((image) -> {
+
+            // image에 좋아요 수 담기
+            image.setLikeCount(image.getLikes().size());
+
+            image.getLikes().forEach((like) -> {
+                // 각 이미지 별 좋아요 정보
+                if (like.getUser().getId() == principalId)
+                    image.setLikeState(true);
+            });
+        });
+
+        return images;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Image> imageStory(long principalId) {
+        return imageRepository.mStory(principalId);
     }
 }
