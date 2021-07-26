@@ -28,7 +28,7 @@ public class ViewControllerTest {
 
     @GetMapping("/image/upload")
     public String uploadPage() {
-        return "image/upload";
+        return "image/imageUpload";
     }
 
     @GetMapping("/user/profile")

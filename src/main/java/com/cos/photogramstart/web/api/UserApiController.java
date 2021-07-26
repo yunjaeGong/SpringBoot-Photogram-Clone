@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -32,26 +33,26 @@ public class UserApiController {
     private final UserService userService;
     private final SubscribeService subscribeService;
 
+    @PutMapping("/api/user/{principalId}/profileImageUrl")
+    public ResponseEntity<?> profileImageUpdate(@PathVariable long principalId, MultipartFile profileImageFile,
+                                                @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        // multipartFile 변수명은 form 의 key 값과 동일해야 파싱됨.
+        User updatedUser = userService.updateProfileImage(principalId, profileImageFile);
+        principalDetails.setUser(updatedUser); // 세선 정보 변경
+        return new ResponseEntity<>(new CMRespDto<>(1, "프로필 사진 수정 완료", null), HttpStatus.OK);
+    }
+
     @PutMapping("/api/user/{userId}")
-    public CMRespDto<?> update(
+    public ResponseEntity<?> update(
             @PathVariable int userId,
             @Valid UserUpdateDto dto,
             BindingResult bindingResult,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errorMap = new HashMap<>();
-
-            for(FieldError error : bindingResult.getFieldErrors()) {
-                errorMap.put(error.getField(), error.getDefaultMessage());
-            }
-            throw new CustomValidationApiException("유효성 검사 실패함 - UserApiController: update", errorMap);
-        } else {
-            User updatedUser = userService.update(userId, dto.toEntity());
-            principal.setUser(updatedUser);
-            return new CMRespDto<>(1, "회원수정 완료", updatedUser);
-            // 응답 시 message converter 실행되며 updatedUser의 모든 getter, setter 호출
-        }
+        User updatedUser = userService.update(userId, dto.toEntity());
+        principal.setUser(updatedUser);
+        return new ResponseEntity<>(new CMRespDto<>(1, "회원수정 완료", updatedUser), HttpStatus.OK);
+        // 응답 시 message converter 실행되며 updatedUser의 모든 getter, setter 호출
 
     }
 

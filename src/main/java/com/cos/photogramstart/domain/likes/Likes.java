@@ -37,7 +37,7 @@ public class Likes {
     @ManyToOne // fetch - Eager
     private Image image; // 하나의 이미지는 여러번 좋아요 가능 1:N, 하나의 좋아요를 여러 이미지가 동시에 - x
 
-    @JsonIgnoreProperties({"image"})
+    @JsonIgnoreProperties({"images"})
     @JoinColumn(name="userId")
     @ManyToOne
     private User user; // 한 유저는 여러 번 좋아요 가능 1:N

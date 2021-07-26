@@ -14,4 +14,11 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     @Query(value = "select * from image where userid in (select toUserId from subscribe where FROMUSERID = :principalId)", nativeQuery = true)
     List<Image> mStory(long principalId);
+
+    @Query(value = "select i.* " +
+            "from image i inner join (select IMAGEID, count(*) as likeCount from LIKES group by IMAGEID) imageCount " +
+            "on i.id = imageCount.IMAGEID " +
+            "order by likeCount desc;", nativeQuery = true)
+    List<Image> mPopular();
+
 }

@@ -28,7 +28,7 @@ public class ImageService {
     private String uploadFolder;
 
     @Transactional
-    public void upload(ImageUploadDto imageUploadDto, PrincipalDetails principal) {
+    public void imageUpload(ImageUploadDto imageUploadDto, PrincipalDetails principal) {
         UUID uuid = UUID.randomUUID(); // 파일명이 아닌 uuid에 따라 파일 구분
         String fileName = uuid + "_" + imageUploadDto.getFile().getOriginalFilename();
         // 다른 사진이지만 파일명이 같으면? -> 덮어쓰기
@@ -64,11 +64,33 @@ public class ImageService {
             });
         });
 
+
         return images;
     }
 
     @Transactional(readOnly = true)
     public List<Image> imageStory(long principalId) {
-        return imageRepository.mStory(principalId);
+        List<Image> images = imageRepository.mStory(principalId);
+
+        images.forEach((image) -> {
+
+            // image에 좋아요 수 담기
+            image.setLikeCount(image.getLikes().size());
+
+            image.getLikes().forEach((like) -> {
+                // 각 이미지 별 좋아요 정보
+                if (like.getUser().getId() == principalId)
+                    image.setLikeState(true);
+            });
+        });
+
+        return images;
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public List<Image> imagePopular() {
+        return imageRepository.mPopular();
     }
 }
